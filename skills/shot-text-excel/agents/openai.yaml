@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shot Text Excel"
+  short_description: "Export shot-cut OCR copy plans to Excel."
+  default_prompt: "Generate per-video Excel copy-planning workbooks from shot-cutting outputs, OCR text, and embedded shot thumbnails."

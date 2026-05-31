@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shot Cutting Agent"
+  short_description: "Action-triggered short-video shot cutting."
+  default_prompt: "Split short videos into action-triggered shots using the learned visual cutting rules."

@@ -18,7 +18,7 @@ from PIL import Image
 from rapidocr_onnxruntime import RapidOCR
 
 
-ROOT = Path(r"E:\USE\codexhome\fenge")
+ROOT = Path(os.environ.get("SHOT_CUTTING_PROJECT_ROOT", str(Path.cwd())))
 OCR_CACHE_VERSION = "ocr_crop720_v1"
 OCR_MAX_WIDTH = 720
 _OCR_LOCAL = threading.local()

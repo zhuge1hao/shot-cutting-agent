@@ -8,7 +8,7 @@ function readOption(name, fallback = "") {
   return process.argv[index + 1] ?? fallback;
 }
 
-const root = path.resolve(readOption("root", "E:/USE/codexhome/fenge"));
+const root = path.resolve(readOption("root", process.cwd()));
 const inputJson = path.resolve(
   readOption("input-json", path.join(root, "output", "shot_text_excels", "video_shot_text_ocr_with_thumbs.json")),
 );
