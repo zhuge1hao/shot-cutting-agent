@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scene Video Breakdown"
+  short_description: "Scene-driven short-video shot breakdowns."
+  default_prompt: "Split scene-driven short videos into calibrated visual story beats and generate aligned Excel breakdowns with bottom-white-subtitle OCR."

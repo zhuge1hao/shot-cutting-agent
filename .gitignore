@@ -1,0 +1,11 @@
+videos/
+output/
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.zip
+*.xlsx
+.venv/
+.env
+
