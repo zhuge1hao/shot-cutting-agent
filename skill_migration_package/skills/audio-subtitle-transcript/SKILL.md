@@ -70,6 +70,7 @@ No-subtitle workbooks should match normal workbooks or the source shot report on
 - `镜头` row must match column by column.
 - `时间` row must match column by column.
 - Embedded image count should equal the source report shot count.
+- Embedded image bytes, dimensions, and anchor positions should match a control workbook when the same source report is used. If `xl/media/*` hashes differ, investigate report selection, evidence paths, thumbnail rebuilding, or workbook generation; do not tune the audio transcript step.
 - Differences are expected only in `文案`, `文案框架`, and other copy-influenced planning rows.
 - If `镜头` or `时间` changes, debug report selection first; do not adjust the audio transcript skill.
 
