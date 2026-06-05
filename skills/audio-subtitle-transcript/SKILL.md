@@ -33,6 +33,8 @@ The transcription script uses `faster-whisper` and `imageio-ffmpeg`. It download
 python .\shot_cutting_agent.py --video-file "<video.mp4>" --output-dir ".\output\test"
 ```
 
+If a valid shot report already exists, reuse it. This skill must not tune visual cutting thresholds, regenerate a different shot report, or add/remove shot columns just because the video has no subtitles. No-subtitle mode changes only the copy source, not the visual shot boundaries.
+
 2. Transcribe the audio:
 
 ```powershell
@@ -60,6 +62,16 @@ python .\build_shot_text_excel_unified.py --video-file "<video.mp4>" --output-di
 - Do not borrow OCR text from product packaging, watermarks, disclaimers, or visual title cards.
 - If one speech segment spans multiple visual shots, it may repeat across those shot columns; image-copy time alignment is more important than deduplicating.
 - If transcript quality is poor, rerun with a larger model such as `medium`, then regenerate Excel with the same shot report.
+
+## Shot Boundary Validation
+
+No-subtitle workbooks should match normal workbooks or the source shot report on visual boundaries when they use the same `--report-mode`.
+
+- `镜头` row must match column by column.
+- `时间` row must match column by column.
+- Embedded image count should equal the source report shot count.
+- Differences are expected only in `文案`, `文案框架`, and other copy-influenced planning rows.
+- If `镜头` or `时间` changes, debug report selection first; do not adjust the audio transcript skill.
 
 ## Speed Defaults
 
