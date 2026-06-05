@@ -59,3 +59,16 @@
 
 如果只迁移 skill 文档而不迁移这两个脚本，新环境可能知道规则，但无法复现当前自动切分和 Excel 生成效果。
 
+## 5. audio-subtitle-transcript
+
+用途：处理没有内嵌白色字幕的视频，从音频语音生成带时间戳的文案，并交给 Excel 生成器按镜头时间范围对齐。
+
+迁移内容：
+- `skills/audio-subtitle-transcript/SKILL.md`
+- `skills/audio-subtitle-transcript/scripts/transcribe_video_audio.py`
+
+核心规则：
+- 用户明确说“无字幕”时使用，不从画面包装字、产品字或水印推断文案。
+- 先生成 `<video_stem>_transcript.json`，再用 `build_shot_text_excel_unified.py --no-subtitle --timed-transcript-json ...` 填写 `文案`。
+- 音频一句话跨多个镜头时可按时间重叠重复填入，优先保证字幕和画面时间对齐。
+- 可选依赖单独安装：`python -m pip install -r requirements-audio.txt`。

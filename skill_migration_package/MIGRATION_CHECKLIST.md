@@ -5,6 +5,7 @@
 - `skills/shot-cutting-agent` 已复制到目标 `$CODEX_HOME/skills/shot-cutting-agent`
 - `skills/shot-text-excel` 已复制到目标 `$CODEX_HOME/skills/shot-text-excel`
 - `skills/scene-video-breakdown` 已复制到目标 `$CODEX_HOME/skills/scene-video-breakdown`
+- `skills/audio-subtitle-transcript` 已复制到目标 `$CODEX_HOME/skills/audio-subtitle-transcript`
 - `project_scripts/shot_cutting_agent.py` 已复制到目标项目根目录
 - `project_scripts/build_shot_text_excel_unified.py` 已复制到目标项目根目录
 
@@ -71,3 +72,20 @@ python <ProjectRoot>\build_shot_text_excel_unified.py --video-file "<video.mp4>"
 - 提高 OCR 召回但保持速度：`--targeted-ocr-frame-budget 96` 或 `128`
 - 只有最后兜底才用：`--full-ocr-sampling`
 
+## 无字幕视频检查
+
+- `skills/audio-subtitle-transcript` 已复制到目标 `$CODEX_HOME/skills/audio-subtitle-transcript`
+- 需要音频转文案时安装可选依赖：`python -m pip install -r requirements-audio.txt`
+- 转写命令可显示帮助：
+
+```powershell
+python <ProjectRoot>\skills\audio-subtitle-transcript\scripts\transcribe_video_audio.py --help
+```
+
+- Excel 生成器支持无字幕参数：
+
+```powershell
+python <ProjectRoot>\build_shot_text_excel_unified.py --help
+```
+
+确认帮助里包含 `--no-subtitle` 和 `--timed-transcript-json`。

@@ -30,3 +30,12 @@ python .\build_shot_text_excel_unified.py --video-file ".\videos\test\sample.mp4
 
 字幕区域可根据素材改为 `top`、`top-bottom`、`wide` 或 `auto`。
 
+## 无字幕视频：从音频生成文案
+
+当视频没有白色字幕时，先从音频生成带时间戳的文案，再用 `--no-subtitle` 跳过 OCR：
+
+```powershell
+python .\skills\audio-subtitle-transcript\scripts\transcribe_video_audio.py --video-file ".\videos\test\sample.mp4" --output-dir ".\output\test\audio_transcripts" --model-size small --language zh
+python .\shot_cutting_agent.py --video-file ".\videos\test\sample.mp4" --output-dir ".\output\test"
+python .\build_shot_text_excel_unified.py --video-file ".\videos\test\sample.mp4" --output-dir ".\output\test" --report-mode model --disable-same-subtitle-merge --no-subtitle --timed-transcript-json ".\output\test\audio_transcripts\sample_transcript.json"
+```

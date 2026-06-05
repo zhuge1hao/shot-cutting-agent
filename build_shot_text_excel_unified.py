@@ -387,6 +387,53 @@ def transcript_copy_for_index(index: int, total: int, units: list[str], previous
     return "" if text == previous else text
 
 
+def load_timed_transcript(path: Path | None) -> list[dict[str, Any]]:
+    if not path:
+        return []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    raw_segments = data.get("segments", data) if isinstance(data, dict) else data
+    segments: list[dict[str, Any]] = []
+    for item in raw_segments or []:
+        if not isinstance(item, dict):
+            continue
+        text = normalize_subtitle(str(item.get("text", "")))
+        if not text:
+            continue
+        start_ms = item.get("start_ms")
+        end_ms = item.get("end_ms")
+        if start_ms is None:
+            start_ms = float(item.get("start", 0.0)) * 1000.0
+        if end_ms is None:
+            end_ms = float(item.get("end", item.get("start", 0.0))) * 1000.0
+        segments.append({"start_ms": float(start_ms), "end_ms": float(end_ms), "text": text})
+    segments.sort(key=lambda item: (item["start_ms"], item["end_ms"]))
+    return segments
+
+
+def timed_transcript_copy_for_shot(shot: dict[str, Any], segments: list[dict[str, Any]]) -> str:
+    if not segments:
+        return ""
+    start_ms = float(shot.get("start_time_ms", 0.0))
+    end_ms = float(shot.get("end_time_ms", start_ms))
+    min_overlap_ms = 80.0
+    texts: list[str] = []
+    for segment in segments:
+        seg_start = float(segment["start_ms"])
+        seg_end = max(seg_start, float(segment["end_ms"]))
+        if seg_end < start_ms - 120.0:
+            continue
+        if seg_start > end_ms + 120.0:
+            break
+        overlap = min(end_ms, seg_end) - max(start_ms, seg_start)
+        starts_inside = start_ms <= seg_start <= end_ms
+        ends_inside = start_ms <= seg_end <= end_ms
+        if overlap >= min_overlap_ms or starts_inside or ends_inside:
+            text = str(segment["text"]).strip()
+            if text and text not in texts:
+                texts.append(text)
+    return " / ".join(texts)
+
+
 def classify_plan(
     index: int,
     shot: dict[str, Any],
@@ -865,6 +912,8 @@ def build_rows(
     video_link: str = "",
     report_mode: str = "auto",
     transcript: str = "",
+    timed_transcript_segments: list[dict[str, Any]] | None = None,
+    no_subtitle: bool = False,
     merge_same_subtitle: bool = True,
     subtitle_region: str = "bottom",
     ocr_workers: int = 4,
@@ -876,11 +925,13 @@ def build_rows(
     video_output_dir = output_dir / video_path.stem
     report_path, report = resolve_report(video_output_dir, report_mode)
     transcript_units = split_transcript(transcript)
+    timed_transcript_segments = timed_transcript_segments or []
     shots = report["shots"]
     subtitle_region = choose_subtitle_region(shots, video_output_dir, subtitle_region)
     cache_path = None
     targeted_cache_path = None
-    if use_ocr_cache and not transcript_units:
+    transcript_mode = bool(transcript_units or timed_transcript_segments)
+    if use_ocr_cache and not transcript_mode and not no_subtitle:
         cache_path = output_dir / "shot_text_excels" / "_ocr_cache" / f"{video_path.stem}_{subtitle_region}.json"
         targeted_cache_path = (
             output_dir
@@ -890,12 +941,12 @@ def build_rows(
         )
     evidence_subtitles = (
         {}
-        if transcript_units
+        if transcript_mode or no_subtitle
         else precompute_evidence_subtitles(shots, video_output_dir, subtitle_region, ocr_workers, cache_path)
     )
     targeted_subtitles = (
         {}
-        if transcript_units or not targeted_ocr_sampling
+        if transcript_mode or no_subtitle or not targeted_ocr_sampling
         else precompute_targeted_subtitles(
             shots,
             video_path,
@@ -914,9 +965,10 @@ def build_rows(
     previous_copy = ""
     for index, shot in enumerate(shots, start=1):
         evidence_path = resolve_evidence_path(video_output_dir, shot)
-        manual_copy = transcript_copy_for_index(index, len(shots), transcript_units, previous_copy)
+        timed_copy = timed_transcript_copy_for_shot(shot, timed_transcript_segments)
+        manual_copy = timed_copy or transcript_copy_for_index(index, len(shots), transcript_units, previous_copy)
         ocr_subtitle = ""
-        if not manual_copy:
+        if not manual_copy and not no_subtitle:
             evidence_text = evidence_subtitles.get(str(shot.get("shot_id", "")))
             if evidence_text:
                 ocr_subtitle = evidence_text
@@ -1078,6 +1130,8 @@ def main() -> None:
     parser.add_argument("--report-mode", choices=["auto", "calibrated", "reference", "model"], default="auto")
     parser.add_argument("--transcript-text", default="")
     parser.add_argument("--transcript-file", type=Path, default=None)
+    parser.add_argument("--timed-transcript-json", type=Path, default=None)
+    parser.add_argument("--no-subtitle", action="store_true")
     parser.add_argument("--disable-same-subtitle-merge", action="store_true")
     parser.add_argument(
         "--subtitle-region",
@@ -1101,6 +1155,7 @@ def main() -> None:
     transcript = args.transcript_text
     if args.transcript_file:
         transcript = args.transcript_file.read_text(encoding="utf-8")
+    timed_transcript_segments = load_timed_transcript(args.timed_transcript_json)
     rows, report_path, resolved_subtitle_region = build_rows(
         video_path,
         output_dir,
@@ -1108,6 +1163,8 @@ def main() -> None:
         args.video_link,
         report_mode=args.report_mode,
         transcript=transcript,
+        timed_transcript_segments=timed_transcript_segments,
+        no_subtitle=args.no_subtitle,
         merge_same_subtitle=not args.disable_same_subtitle_merge,
         subtitle_region=args.subtitle_region,
         ocr_workers=args.ocr_workers,

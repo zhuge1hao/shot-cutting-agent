@@ -1,0 +1,5 @@
+interface:
+  display_name: "Audio Subtitle Transcript"
+  short_description: "Transcribe no-subtitle videos for Excel拆解."
+  default_prompt: "Use $audio-subtitle-transcript to transcribe a no-subtitle video and align speech text to shot-based Excel columns."
+

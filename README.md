@@ -88,3 +88,35 @@ powershell -ExecutionPolicy Bypass -File .\skill_migration_package\install_skill
 ## 数据说明
 
 真实视频、基准图、生成 Excel、OCR 缓存和输出目录不提交到 GitHub。需要本地复现时，按 [examples/README.md](examples/README.md) 准备素材目录。
+
+## No-Subtitle Audio Workflow
+
+Use this path when the video has no burned-in subtitles and the copy must come from speech audio.
+
+Optional audio dependencies:
+
+```powershell
+python -m pip install -r .\requirements-audio.txt
+```
+
+Create a timed transcript:
+
+```powershell
+python .\skills\audio-subtitle-transcript\scripts\transcribe_video_audio.py --video-file "<video.mp4>" --output-dir ".\output\test\audio_transcripts" --model-size small --language zh
+```
+
+Generate Excel without OCR subtitle extraction:
+
+```powershell
+python .\build_shot_text_excel_unified.py --video-file "<video.mp4>" --output-dir ".\output\test" --report-mode model --disable-same-subtitle-merge --no-subtitle --timed-transcript-json ".\output\test\audio_transcripts\<video_stem>_transcript.json"
+```
+
+GitHub skill install prompt should include all four skills:
+
+```text
+Install these skills from zhuge1hao/shot-cutting-agent:
+- skills/shot-cutting-agent
+- skills/shot-text-excel
+- skills/scene-video-breakdown
+- skills/audio-subtitle-transcript
+```

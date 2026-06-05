@@ -10,6 +10,7 @@ skill_migration_package/
     shot-cutting-agent/       镜头切分规则和学习记录
     shot-text-excel/          字幕 OCR、文案拆解、横向 Excel 生成规则
     scene-video-breakdown/    场景类视频的独立拆解规则
+    audio-subtitle-transcript/ 无字幕视频的音频转写和时间戳文案规则
   project_scripts/
     shot_cutting_agent.py
     build_shot_text_excel_unified.py
@@ -51,4 +52,24 @@ python <ProjectRoot>\build_shot_text_excel_unified.py --video-file "<video.mp4>"
 ```powershell
 python <ProjectRoot>\shot_cutting_agent.py --video-file "<video.mp4>" --output-dir "<ProjectRoot>\output\test" --reference-img-dir "<reference_img_dir>"
 python <ProjectRoot>\build_shot_text_excel_unified.py --video-file "<video.mp4>" --output-dir "<ProjectRoot>\output\test" --report-mode reference --disable-same-subtitle-merge --subtitle-region bottom --ocr-workers 6
+```
+
+## 无字幕视频：音频转文案
+
+当视频没有白色字幕时，安装可选音频依赖：
+
+```powershell
+python -m pip install -r <RepoRoot>\requirements-audio.txt
+```
+
+先生成带时间戳的音频文案：
+
+```powershell
+python <ProjectRoot>\skills\audio-subtitle-transcript\scripts\transcribe_video_audio.py --video-file "<video.mp4>" --output-dir "<ProjectRoot>\output\test\audio_transcripts" --model-size small --language zh
+```
+
+再生成 Excel，并用 `--no-subtitle` 禁用 OCR 字幕读取：
+
+```powershell
+python <ProjectRoot>\build_shot_text_excel_unified.py --video-file "<video.mp4>" --output-dir "<ProjectRoot>\output\test" --report-mode model --disable-same-subtitle-merge --no-subtitle --timed-transcript-json "<ProjectRoot>\output\test\audio_transcripts\<video_stem>_transcript.json"
 ```

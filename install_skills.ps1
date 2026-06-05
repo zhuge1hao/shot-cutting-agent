@@ -9,7 +9,7 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $SkillsSource = Join-Path $RepoRoot "skills"
 $SkillsTarget = Join-Path $CodexHome "skills"
-$SkillNames = @("shot-cutting-agent", "shot-text-excel", "scene-video-breakdown")
+$SkillNames = @("shot-cutting-agent", "shot-text-excel", "scene-video-breakdown", "audio-subtitle-transcript")
 
 New-Item -ItemType Directory -Force -Path $SkillsTarget | Out-Null
 $skillsTargetFull = [System.IO.Path]::GetFullPath($SkillsTarget)

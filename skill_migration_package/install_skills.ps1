@@ -11,7 +11,7 @@ $ProjectScripts = Join-Path $PackageRoot "project_scripts"
 $SkillsTarget = Join-Path $CodexHome "skills"
 
 New-Item -ItemType Directory -Force -Path $SkillsTarget | Out-Null
-foreach ($skill in @("shot-cutting-agent", "shot-text-excel", "scene-video-breakdown")) {
+foreach ($skill in @("shot-cutting-agent", "shot-text-excel", "scene-video-breakdown", "audio-subtitle-transcript")) {
     $src = Join-Path $SkillsSource $skill
     $dst = Join-Path $SkillsTarget $skill
     if (Test-Path -LiteralPath $dst) {
