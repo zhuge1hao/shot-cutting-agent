@@ -23,6 +23,22 @@ OCR_CACHE_VERSION = "ocr_crop720_v1"
 OCR_MAX_WIDTH = 720
 _OCR_LOCAL = threading.local()
 
+DISCLAIMER_TOKENS = [
+    "请树立正确",
+    "树立正确",
+    "仅为产品展示",
+    "产品展示",
+    "公序良俗",
+    "社会秩序",
+    "价值观",
+    "容貌焦虑",
+    "客貌焦虑",
+    "制造容貌",
+    "非违反",
+    "青树立",
+    "焦店",
+]
+
 FIELDS = [
     "视频链接",
     "镜头",
@@ -78,6 +94,23 @@ def read_video_frames(video_path: Path, frame_numbers: list[int] | set[int]) -> 
                 frames[frame_no] = frame.copy()
     cap.release()
     return frames
+
+
+def is_disclaimer_noise(text: str) -> bool:
+    compact = re.sub(r"\s+", "", text or "")
+    if not compact:
+        return False
+    hits = sum(1 for token in DISCLAIMER_TOKENS if token in compact)
+    return hits >= 2 or any(
+        phrase in compact
+        for phrase in [
+            "请树立正确价值观",
+            "仅为产品展示",
+            "非违反公序良俗",
+            "社会秩序",
+            "非制造容貌焦虑",
+        ]
+    )
 
 
 def normalize_subtitle(text: str) -> str:
@@ -149,6 +182,16 @@ def normalize_subtitle(text: str) -> str:
         text = text.replace(old, new)
     if text == "文胸":
         text = "内衣"
+    text = text.replace("怠是溜肩", "也是溜肩")
+    text = text.replace("出门间热", "出门闷热")
+    text = text.replace("专门以上", "专门针对以上")
+    text = text.replace("？?", "？").replace("??", "?")
+    if "/" in text or "／" in text:
+        parts = [part for part in re.split(r"[/／]+", text) if part]
+        parts = [part for part in parts if not is_disclaimer_noise(part)]
+        text = "/".join(parts)
+    if is_disclaimer_noise(text):
+        text = ""
     return text
 
 
@@ -264,6 +307,7 @@ def ocr_subtitle(ocr: RapidOCR, frame: np.ndarray | None, mode: str = "bottom") 
             text
             for text in merged
             if text not in brand_noise
+            and not is_disclaimer_noise(text)
             and not any(token in text for token in ["Herbfree", "Herbfee", "Herb", "PIER", "N°5"])
         ]
     return " / ".join(merged)
