@@ -19,7 +19,7 @@ from rapidocr_onnxruntime import RapidOCR
 
 
 ROOT = Path(os.environ.get("SHOT_CUTTING_PROJECT_ROOT", str(Path.cwd())))
-OCR_CACHE_VERSION = "ocr_crop720_v1"
+OCR_CACHE_VERSION = "ocr_crop720_v3"
 OCR_MAX_WIDTH = 720
 _OCR_LOCAL = threading.local()
 
@@ -140,6 +140,9 @@ def normalize_subtitle(text: str) -> str:
     text = text.replace("开俊即穿", "开袋即穿")
     text = text.replace("买76条", "买了6条")
     text = text.replace("开装即宇", "开袋即穿")
+    text = text.replace("不勤換", "不勤换")
+    text = text.replace("透气不门热", "透气不闷热")
+    text = text.replace("这款a类", "这款A类")
     text = re.sub(r".*美宅私物[（(]?开[袋业装][^/／]*[/／]", "", text)
     text = text.replace("问了女知道", "问了才知道")
     text = text.replace("问了知道", "问了才知道")
@@ -200,7 +203,7 @@ def looks_like_subtitle(text: str, score: float) -> bool:
         return False
     text = normalize_subtitle(text)
     if len(text) < 4:
-        return False
+        return bool(score >= 0.82 and len(text) >= 3 and re.search(r"[\u4e00-\u9fff]", text))
     if re.fullmatch(r"[\d:：./ -]+", text):
         return False
     if not re.search(r"[\u4e00-\u9fff]", text):
@@ -288,8 +291,11 @@ def ocr_subtitle(ocr: RapidOCR, frame: np.ndarray | None, mode: str = "bottom") 
             box_w = max(xs) - min(xs)
             if center_y < crop_h * min_center or center_y > crop_h * max_center:
                 continue
-            if box_h < 20 or box_w < w * 0.18:
+            if box_h < 20:
                 continue
+            if box_w < w * 0.18:
+                if not (score >= 0.82 and len(text) >= 3 and box_w >= w * 0.08):
+                    continue
             if not looks_like_white_subtitle_region(crop, box):
                 continue
             candidates.append((crop_top + center_y, min(xs), text))
@@ -964,7 +970,7 @@ def build_rows(
     use_ocr_cache: bool = True,
     full_ocr_sampling: bool = False,
     targeted_ocr_sampling: bool = True,
-    targeted_ocr_frame_budget: int = 64,
+    targeted_ocr_frame_budget: int = 48,
 ) -> tuple[list[dict[str, Any]], Path, str]:
     video_output_dir = output_dir / video_path.stem
     report_path, report = resolve_report(video_output_dir, report_mode)
@@ -1186,7 +1192,7 @@ def main() -> None:
     parser.add_argument("--no-ocr-cache", action="store_true")
     parser.add_argument("--full-ocr-sampling", action="store_true")
     parser.add_argument("--disable-targeted-ocr-sampling", action="store_true")
-    parser.add_argument("--targeted-ocr-frame-budget", type=int, default=64)
+    parser.add_argument("--targeted-ocr-frame-budget", type=int, default=48)
     args = parser.parse_args()
 
     video_path = args.video_file.resolve()
