@@ -182,6 +182,13 @@ When `--reference-img-dir` is provided:
 
 Totals: raw candidates `2444`, automatic model `636`, reference calibrated `630`, automatic/reference ratio about `1.047x`.
 
+## 8.2 Magic Body Reference Calibration
+
+- Folder `videos/test/imgs8.2-魔鬼身材` contains `86` clean states across `157.07s`. Raw candidates were `300`, the automatic model kept `63`, and `reference_optimized` kept all `86` reference states.
+- Matching was strong: median distance about `0.066`, max distance about `0.172`, no weak matches, and `86/86` references were within `24` frames of a raw candidate.
+- For similar long Ufeel tummy-control / hip-lift / no-mark mixed-proof videos, reference density near `0.55 shots/sec` can be correct. Preserve repeated-subtitle frames only when they add a distinct hook, wearing comparison, package/quantity, body-shape, fabric/stretch, gusset, no-mark, or stable pre/post-action proof state.
+- Treat the gap from `63` model shots to `86` reference states as optimization and representative-frame correction; do not raise candidate sensitivity.
+
 ## Later User Calibration
 
 Video 7:

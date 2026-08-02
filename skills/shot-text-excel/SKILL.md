@@ -277,6 +277,10 @@ For 5.20-style product口播 / product混剪 / KOC口播 / 520 activity promotio
 - Expect OCR noise in sale subtitles, such as a digit or short character being misread in `一折来了`-style lines. Preserve the OCR as evidence unless the correction is obvious from the same shot; do not rewrite product text from the image into `文案`.
 - Validation for this subtype: data columns must equal final report shots exactly, embedded images must equal data columns, and early activity-hook columns should be spot-checked because repeated sale subtitles are where accidental merging or subtitle carryover most often happens.
 
+## 8.2 Magic Body Reference Calibration
+
+Use `videos/test/imgs8.2-魔鬼身材` with `--report-mode reference --subtitle-region bottom --disable-same-subtitle-merge`. The validated workbook has `86` horizontal shot columns and `86` embedded images, compared with `63` automatic model columns. Keep repeated subtitles in separate columns when the reference images show distinct body-shape, wearing, package, fabric/stretch, or no-mark proof states; calibrate OCR against each embedded evidence frame and never carry text from a neighboring shot.
+
 ## Validation
 
 After export, validate every workbook:
